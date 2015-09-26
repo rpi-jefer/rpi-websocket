@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Websocket</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+  </head>
+  <body>
+  <hr>
+  <div align="center" id="content" class="alert alert-info">
+  </div>
+
+<script type="text/javascript">
+// comet implementation
+var Comet = function (data_url) {
+  this.timestamp = 0;
+  this.url = data_url;  
+  this.noerror = true;
+
+  this.connect = function() {
+    var self = this;
+
+    $.ajax({
+      type : 'get',
+      url : this.url,
+      dataType : 'json', 
+      data : {'timestamp' : self.timestamp},
+      success : function(response) {
+        self.timestamp = response.timestamp;
+        self.handleResponse(response);
+        self.noerror = true;          
+      },
+      complete : function(response) {
+        // send a new ajax request when this request is finished
+        if (!self.noerror) {
+          // if a connection problem occurs, try to reconnect each 1 second
+          setTimeout(function(){ comet.connect(); }, 1000);           
+        }else {
+          // persistent connection
+          self.connect(); 
+        }
+
+        self.noerror = false; 
+      }
+    });
+  }
+  this.disconnect = function() {}
+  
+  this.handleResponse = function(response) {
+    if(response.msg == '1'){
+     console.log('Boton Presionado:'+response.msg);
+     $('#content').append('<h4>Bot&oacute;n Presionado <hr></h4>');
+    }
+  }
+
+}
+var comet = new Comet('./procesa.php');
+comet.connect();
+</script>
+
+</body>
+</html>
